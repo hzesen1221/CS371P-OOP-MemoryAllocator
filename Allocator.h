@@ -15,6 +15,7 @@
 #include <cstddef>   // size_t
 #include <new>       // new
 #include <stdexcept> // invalid_argument
+#include <cstdlib>   // abs
 
 // ---------
 // Allocator
@@ -69,8 +70,18 @@ class Allocator {
          * O(n) in time
          * <your documentation>
          */
-        bool valid () const {
-            // <your code>
+        bool valid () const {    
+            size_type index = 0;
+            while (index < N)
+            {
+                const int* b = reinterpret_cast<const int *>(a + index);
+                const int* e = reinterpret_cast<const int *>(a + (std::abs(*b) + sizeof(int) + index));
+                std::cout << "index: " << index << std::endl; //debug............
+                std::cout << "*b   : " << *b << std::endl; //debug............
+                std::cout << "*e   : " << *e << std::endl << std::endl; //debug............
+                if (*b != *e) return false;
+                index += std::abs(*e) + 2 * sizeof(int);
+            }
             return true;}
 
     public:
@@ -84,8 +95,13 @@ class Allocator {
          * <your documentation>
          */
         Allocator () {
-            // <your code>
-            assert(valid());}
+            int init_available_space = N - 2 * sizeof(int);
+            int* p = reinterpret_cast<int*>(a);
+            *p = init_available_space;
+            p = reinterpret_cast<int*>(a + N - sizeof(int));
+            *p = init_available_space;
+            assert(valid());
+        }
 
         // Default copy, destructor, and copy assignment
         // Allocator  (const Allocator<T>&);
@@ -105,9 +121,35 @@ class Allocator {
          * choose the first block that fits
          */
         pointer allocate (size_type n) {
-            // <your code>
+            int required_size = n * sizeof(value_type);
+
+            size_type index = 0;
+            while (index < N)
+            {
+                int* b = reinterpret_cast<int *>(a + index);
+                if (*b < 0 || *b < required_size)
+                    index += std::abs(*b) + 2 * sizeof(int);
+                else
+                {
+                    int available_space = *b;
+                    int* e = reinterpret_cast<int *>(a + (std::abs(*b) + sizeof(int) + index));
+                    *b = -(required_size);
+                    int* e_allocated = reinterpret_cast<int *>(a + (std::abs(*b) + sizeof(int) + index));
+                    *e_allocated = *b;
+                    if (e != e_allocated) 
+                    {
+                        int* b_available = reinterpret_cast<int *>(a + (std::abs(*b) + 2 * sizeof(int) + index));
+                        *b_available = available_space - 2 * sizeof(int) - required_size;
+                        *e = *b_available;
+                    }
+                    assert(valid());
+                    return reinterpret_cast<pointer>(b + 1);
+                }
+            }
             assert(valid());
-            return 0;}                   // replace!
+            std::cout << "There is not enough space available. Please deallocate some data first.\n";
+            return 0;}
+
 
         // ---------
         // construct
