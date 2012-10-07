@@ -76,25 +76,60 @@ class Allocator {
             {
                 const int* b = reinterpret_cast<const int *>(a + index);
                 const int* e = reinterpret_cast<const int *>(a + (std::abs(*b) + sizeof(int) + index));
-                std::cout << "index: " << index << std::endl; //debug............
-                std::cout << "*b   : " << *b << std::endl; //debug............
-                std::cout << "*e   : " << *e << std::endl << std::endl; //debug............
                 if (*b != *e) return false;
                 index += std::abs(*e) + 2 * sizeof(int);
             }
             return true;}
 
-        void try_merge_right (int *e)
+        int* try_merge_right (int *b, int *e)
         {
-
+            int* b_next_chunk = e + 1;
+            int* e_next_chunk = reinterpret_cast<int*>((char *)b_next_chunk + (std::abs(*b_next_chunk) + sizeof(int)));
+            if (*b_next_chunk > 0)
+            {
+                int new_size = std::abs(*e) + *b_next_chunk + 2 * sizeof(int);
+                *b = *e_next_chunk = new_size;
+            }
+            else
+            {
+                *b = *e = std::abs(*b);
+            }
+            return e_next_chunk;    
         } 
 
-        void try_merge_left (int *b)
+        int* try_merge_left (int *b, int *e)
         {
-
+            int* e_previous_chunk = b - 1;
+            int* b_previous_chunk = reinterpret_cast<int*>((char *)e_previous_chunk - (std::abs(*e_previous_chunk) + sizeof(int)));
+            if (*e_previous_chunk > 0)
+            {
+                int new_size = std::abs(*b) + *e_previous_chunk + 2 * sizeof(int);
+                *e = *b_previous_chunk = new_size;
+            }
+            else
+            {
+                *b = *e = std::abs(*b);
+            }
+            return b_previous_chunk;
         } 
 
     public:
+
+        void debug () const {    
+            size_type index = 0;
+            while (index < N)
+            {
+                const int* b = reinterpret_cast<const int *>(a + index);
+                const int* e = reinterpret_cast<const int *>(a + (std::abs(*b) + sizeof(int) + index));
+                std::cout << "index: " << index << std::endl; //debug............
+                std::cout << "*b   : " << *b << std::endl; //debug............
+                std::cout << "*e   : " << *e << std::endl << std::endl; //debug............
+                if (*b != *e) std::cout << "FUCKED UP" << std::endl; //debug.............
+                index += std::abs(*e) + 2 * sizeof(int);
+            }
+            std::cout << "\n\n\n";
+        }
+
         // ------------
         // constructors
         // ------------
@@ -171,7 +206,7 @@ class Allocator {
          * <your documentation>
          */
         void construct (pointer p, const_reference v) {
-            // new (p) T(v);                            // uncomment!
+            new (p) T(v);                            // uncomment!
             assert(valid());}
 
         // ----------
@@ -190,16 +225,16 @@ class Allocator {
             char* very_end = (char *)e + sizeof(int);
             if ((char*)b == &a[0]) 
             {
-                try_merge_right(e);
+                try_merge_right(b, e);
             }
             else if (very_end == &a[N])
             {
-                try_merge_left(b);
+                try_merge_left(b, e);
             }
             else
             {
-                try_merge_left(b);
-                try_merge_right(e);
+                b = try_merge_left(b, e);
+                try_merge_right(b, e);
             }
             assert(valid());}
 
@@ -213,7 +248,7 @@ class Allocator {
          * <your documentation>
          */
         void destroy (pointer p) {
-            // p->~T();            // uncomment!
+            p->~T();            // uncomment!
             assert(valid());}};
 
 #endif // Allocator_h
