@@ -1,28 +1,28 @@
 Project #3: Allocator
 Date: Wed, 10 Oct 2012
 
-Course Name: CS 371P
-Unique: 53060
+Course Name:
+Unique:
 
-First Name: Zesen
-Last Name: Huang
-EID: zh2754
-E-mail: zesen1221@gmail.com
-Estimated number of hours: 10
-Actual    number of hours: 6
+First Name:
+Last Name:
+EID:
+E-mail:
+Estimated number of hours:
+Actual    number of hours:
 
-Partner First Name: Michael
-Partner Last Name: Madden
-Partner EID: mm43796
-Partner E-mail: m.adamsmadden@gmail.com
-Partner Estimated number of hours: 10
-Partner Actual    number of hours: 6
+Partner First Name:
+Partner Last Name:
+Partner EID:
+Partner E-mail:
+Partner Estimated number of hours:
+Partner Actual    number of hours:
 
-Turnin CS Username: hzesen
-GitHub ID: hzesen1221
+Turnin CS Username:
+GitHub ID:
 GitHub Repository Name: cs371p-allocator
 
-Comments: none.
+Comments:
 
 ----------------
 Pair Programming

@@ -68,8 +68,7 @@ class Allocator {
         /**
          * O(1) in space
          * O(n) in time
-         * Iterates through a[N] and makes sure that all of its nodes are correctly
-         * set and formatted.
+         * <your documentation>
          */
         bool valid () const {    
             size_type index = 0;
@@ -82,9 +81,6 @@ class Allocator {
             }
             return true;}
 
-        /**
-         * Used by deallocate to merge free contiguous blocks of free memory to the right
-         */
         int* try_merge_right (int *b, int *e)
         {
             int* b_next_chunk = e + 1;
@@ -101,9 +97,6 @@ class Allocator {
             return e_next_chunk;    
         } 
 
-        /**
-         * Used by deallocate to merge free contiguous blocks of free memory to the left
-         */
         int* try_merge_left (int *b, int *e)
         {
             int* e_previous_chunk = b - 1;
@@ -145,7 +138,7 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * Sets up initial nodes in a[N] to total free space available in block
+         * <your documentation>
          */
         Allocator () {
             int init_available_space = N - 2 * sizeof(int);
@@ -168,16 +161,12 @@ class Allocator {
         /**
          * O(1) in space
          * O(n) in time
-         * Finds first available block of memory with enough free space for n objects.
-         * When appropriate block found, new nodes are set up at either end with new
-         * free space and the old nodes are changed accordingly to the amount of space
-         * left. Also makes sure there is enough room to allocate.
+         * <your documentation>
          * after allocation there must be enough space left for a valid block
          * the smallest allowable block is sizeof(T) + (2 * sizeof(int))
          * choose the first block that fits
          */
         pointer allocate (size_type n) {
-	    assert (n >= 0);
             int required_size = n * sizeof(value_type);
 
             size_type index = 0;
@@ -200,7 +189,6 @@ class Allocator {
                         *e = *b_available;
                     }
                     assert(valid());
-		    assert (b != NULL);
                     return reinterpret_cast<pointer>(b + 1);
                 }
             }
@@ -216,7 +204,7 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * Constructor for object.
+         * <your documentation>
          */
         void construct (pointer p, const_reference v) {
             new (p) T(v);                            // uncomment!
@@ -229,13 +217,10 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * Goes to pointer p in a[N] and then checks to see if nodes next to block to be 
-         * deallocated indicate free space.  If so, try to merge in that (or those)
-         * direction(s).
+         * <your documentation>
          * after deallocation adjacent free blocks must be coalesced
          */
         void deallocate (pointer p, size_type = 0) {
-	    assert (p != NULL);
             int* b = reinterpret_cast<int *>((int*)p - 1);
             int* e = reinterpret_cast<int *>((char *)b + (std::abs(*b) + sizeof(int)));
             char* very_end = (char *)e + sizeof(int);
@@ -261,7 +246,7 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * Destructor for object
+         * <your documentation>
          */
         void destroy (pointer p) {
             p->~T();            // uncomment!
