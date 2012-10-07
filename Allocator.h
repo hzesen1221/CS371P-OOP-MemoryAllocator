@@ -68,7 +68,8 @@ class Allocator {
         /**
          * O(1) in space
          * O(n) in time
-         * <your documentation>
+         * Iterates through a[N] and makes sure that all of its nodes are correctly
+         * set and formatted.
          */
         bool valid () const {    
             size_type index = 0;
@@ -81,8 +82,21 @@ class Allocator {
             }
             return true;}
 
+        // ---------------
+        // try_merge_right
+        // ---------------
+
+        /**
+         * Used by deallocate to merge free contiguous blocks of free memory to the right
+         * @param b the beginning of the deallocated block.
+         * @param e the end of the deallocated block.
+         * @return a pointer to the end of the next block.
+         */
         int* try_merge_right (int *b, int *e)
         {
+            assert(e != NULL);
+            assert(b != NULL);
+            assert(valid());
             int* b_next_chunk = e + 1;
             int* e_next_chunk = reinterpret_cast<int*>((char *)b_next_chunk + (std::abs(*b_next_chunk) + sizeof(int)));
             if (*b_next_chunk > 0)
@@ -94,11 +108,27 @@ class Allocator {
             {
                 *b = *e = std::abs(*b);
             }
+            assert(valid());
             return e_next_chunk;    
         } 
 
+
+        // ---------------
+        // try_merge_left
+        // ---------------
+
+        /**
+         * Used by deallocate to merge free contiguous blocks of free memory to the left
+         * @param b the beginning of the deallocated block.
+         * @param e the end of the deallocated block.
+         * @return a pointer to the beginning of the previous block.
+         */
+
         int* try_merge_left (int *b, int *e)
         {
+            assert(e != NULL);
+            assert(b != NULL);
+            assert(valid());
             int* e_previous_chunk = b - 1;
             int* b_previous_chunk = reinterpret_cast<int*>((char *)e_previous_chunk - (std::abs(*e_previous_chunk) + sizeof(int)));
             if (*e_previous_chunk > 0)
@@ -110,25 +140,11 @@ class Allocator {
             {
                 *b = *e = std::abs(*b);
             }
+            assert(valid());
             return b_previous_chunk;
         } 
 
     public:
-
-        void debug () const {    
-            size_type index = 0;
-            while (index < N)
-            {
-                const int* b = reinterpret_cast<const int *>(a + index);
-                const int* e = reinterpret_cast<const int *>(a + (std::abs(*b) + sizeof(int) + index));
-                std::cout << "index: " << index << std::endl; //debug............
-                std::cout << "*b   : " << *b << std::endl; //debug............
-                std::cout << "*e   : " << *e << std::endl << std::endl; //debug............
-                if (*b != *e) std::cout << "FUCKED UP" << std::endl; //debug.............
-                index += std::abs(*e) + 2 * sizeof(int);
-            }
-            std::cout << "\n\n\n";
-        }
 
 
         // ------------
@@ -138,7 +154,7 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * <your documentation>
+         * Sets up initial nodes in a[N] to total free space available in block
          */
         Allocator () {
             int init_available_space = N - 2 * sizeof(int);
@@ -161,12 +177,18 @@ class Allocator {
         /**
          * O(1) in space
          * O(n) in time
-         * <your documentation>
-         * after allocation there must be enough space left for a valid block
+         * Finds first available block of memory with enough free space for n objects.
+         * When appropriate block found, new nodes are set up at either end with new
+         * free space and the old nodes are changed accordingly to the amount of space
+         * left. Also makes sure there is enough room to allocate.
+         * After allocation there must be enough space left for a valid block
          * the smallest allowable block is sizeof(T) + (2 * sizeof(int))
          * choose the first block that fits
+         * @param n the number of objects to allocate memory for.
+         * @return the pointer to the beginning of the newly allocated block (after the node).
          */
         pointer allocate (size_type n) {
+            assert(n > 0);
             int required_size = n * sizeof(value_type);
 
             size_type index = 0;
@@ -204,7 +226,9 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * <your documentation>
+         * Constructor for object.
+         * @param p the pointer that points to the address where you want to store the object.
+         * @param v the object that you want to store.
          */
         void construct (pointer p, const_reference v) {
             new (p) T(v);                            // uncomment!
@@ -217,10 +241,15 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * <your documentation>
-         * after deallocation adjacent free blocks must be coalesced
+         * Goes to pointer p in a[N] and then checks to see if nodes next to block to be
+         * deallocated indicate free space. If so, try to merge in that (or those)
+         * direction(s).
+         * After deallocation adjacent free blocks must be coalesced
+         * @param p the pointer that points to the address of the object that you want to
+         * deallocate memory for.
          */
         void deallocate (pointer p, size_type = 0) {
+            assert(p != NULL);
             int* b = reinterpret_cast<int *>((int*)p - 1);
             int* e = reinterpret_cast<int *>((char *)b + (std::abs(*b) + sizeof(int)));
             char* very_end = (char *)e + sizeof(int);
@@ -246,7 +275,8 @@ class Allocator {
         /**
          * O(1) in space
          * O(1) in time
-         * <your documentation>
+         * Destructor for object.
+         * @param p the pointer that points to the address of the object that you want to destroy.
          */
         void destroy (pointer p) {
             p->~T();            // uncomment!
