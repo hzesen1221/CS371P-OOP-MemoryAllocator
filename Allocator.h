@@ -84,6 +84,16 @@ class Allocator {
             }
             return true;}
 
+        void try_merge_right (int *e)
+        {
+
+        } 
+
+        void try_merge_left (int *b)
+        {
+
+        } 
+
     public:
         // ------------
         // constructors
@@ -175,7 +185,22 @@ class Allocator {
          * after deallocation adjacent free blocks must be coalesced
          */
         void deallocate (pointer p, size_type = 0) {
-            // <your code>
+            int* b = reinterpret_cast<int *>((int*)p - 1);
+            int* e = reinterpret_cast<int *>((char *)b + (std::abs(*b) + sizeof(int)));
+            char* very_end = (char *)e + sizeof(int);
+            if ((char*)b == &a[0]) 
+            {
+                try_merge_right(e);
+            }
+            else if (very_end == &a[N])
+            {
+                try_merge_left(b);
+            }
+            else
+            {
+                try_merge_left(b);
+                try_merge_right(e);
+            }
             assert(valid());}
 
         // -------
