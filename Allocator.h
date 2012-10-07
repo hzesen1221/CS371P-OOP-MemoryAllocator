@@ -130,6 +130,7 @@ class Allocator {
             std::cout << "\n\n\n";
         }
 
+
         // ------------
         // constructors
         // ------------
@@ -191,8 +192,8 @@ class Allocator {
                     return reinterpret_cast<pointer>(b + 1);
                 }
             }
+            throw std::bad_alloc();
             assert(valid());
-            std::cout << "There is not enough space available. Please deallocate some data first.\n";
             return 0;}
 
 

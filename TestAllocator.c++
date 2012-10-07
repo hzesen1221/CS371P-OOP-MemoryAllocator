@@ -38,7 +38,7 @@ struct TestAllocator : CppUnit::TestFixture {
     typedef typename A::pointer         pointer;
 
     // --------
-    // test_one
+    // test_one: provided test
     // --------
 
     void test_one () {
@@ -51,8 +51,9 @@ struct TestAllocator : CppUnit::TestFixture {
         x.destroy(p);
         x.deallocate(p, s);}
 
+
     // --------
-    // test_ten
+    // test_ten: provided test
     // --------
 
     void test_ten () {
@@ -78,6 +79,62 @@ struct TestAllocator : CppUnit::TestFixture {
             x.destroy(e);}
         x.deallocate(b, s);}
 
+
+    // --------
+    // bad_allocation: trying to allocate more than the space permits, an exception thrown.
+    // --------
+
+    void bad_allocation () {
+        A x;
+        try {
+        const pointer p2 = x.allocate(15);
+        x.destroy(p2);
+        x.deallocate(p2, 15);
+        }
+        catch (std::bad_alloc& e)
+        {
+            CPPUNIT_ASSERT(true);
+        }
+        }
+
+    // --------
+    // just_right_allocation: trying to allocate all space (for int allocator).
+    // --------
+
+    void just_right_allocation () {
+        A x;
+        try {
+        const pointer p2 = x.allocate(13);
+        x.destroy(p2);
+        x.deallocate(p2, 13);
+        }
+        catch (std::bad_alloc& e)
+        {
+            CPPUNIT_ASSERT(true);
+        }
+        }
+
+    // --------
+    // regular_allocation: trying to allocate some spaces.
+    // --------
+
+    void regular_allocation () {
+        A x;
+        try {
+        const pointer p2 = x.allocate(5);
+        x.destroy(p2);
+        x.deallocate(p2, 5);
+        CPPUNIT_ASSERT(true);
+        }
+        catch (std::bad_alloc& e)
+        {
+            CPPUNIT_ASSERT(false); // you won't get here.
+        }
+        }
+
+
+
+
     // -----
     // suite
     // -----
@@ -85,6 +142,9 @@ struct TestAllocator : CppUnit::TestFixture {
     CPPUNIT_TEST_SUITE(TestAllocator);
     CPPUNIT_TEST(test_one);
     CPPUNIT_TEST(test_ten);
+    CPPUNIT_TEST(bad_allocation);
+    CPPUNIT_TEST(just_right_allocation);
+    CPPUNIT_TEST(regular_allocation);
     CPPUNIT_TEST_SUITE_END();};
 
 // ----
@@ -99,10 +159,10 @@ int main () {
     CppUnit::TextTestRunner tr;
 
     tr.addTest(TestAllocator< std::allocator<int> >::suite());
-//  tr.addTest(TestAllocator< Allocator<int, 100> >::suite()); // uncomment!
+    tr.addTest(TestAllocator< Allocator<int, 100> >::suite());
 
     tr.addTest(TestAllocator< std::allocator<double> >::suite());
-//  tr.addTest(TestAllocator< Allocator<double, 100> >::suite()); // uncomment!
+    tr.addTest(TestAllocator< Allocator<double, 100> >::suite()); 
 
     tr.run();
 
