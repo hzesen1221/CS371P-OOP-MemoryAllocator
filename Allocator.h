@@ -103,13 +103,15 @@ class Allocator {
             {
                 int new_size = std::abs(*e) + *b_next_chunk + 2 * sizeof(int);
                 *b = *e_next_chunk = new_size;
+                assert(valid());
+                return e_next_chunk; 
             }
             else
             {
                 *b = *e = std::abs(*b);
-            }
-            assert(valid());
-            return e_next_chunk;    
+                assert(valid());
+                return e; 
+            }   
         } 
 
 
@@ -135,13 +137,15 @@ class Allocator {
             {
                 int new_size = std::abs(*b) + *e_previous_chunk + 2 * sizeof(int);
                 *e = *b_previous_chunk = new_size;
+                assert(valid());
+                return b_previous_chunk;
             }
             else
             {
                 *b = *e = std::abs(*b);
+                assert(valid());
+                return b;
             }
-            assert(valid());
-            return b_previous_chunk;
         } 
 
     public:
@@ -188,9 +192,10 @@ class Allocator {
          * @return the pointer to the beginning of the newly allocated block (after the node).
          */
         pointer allocate (size_type n) {
-            assert(n > 0);
+            if ((int)n == 0) return NULL; 
+            if ((int)n < 0) throw std::bad_alloc(); 
             int required_size = n * sizeof(value_type);
-
+            int new_size = 0;
             size_type index = 0;
             while (index < N)
             {
@@ -209,6 +214,12 @@ class Allocator {
                         int* b_available = reinterpret_cast<int *>(a + (std::abs(*b) + 2 * sizeof(int) + index));
                         *b_available = available_space - 2 * sizeof(int) - required_size;
                         *e = *b_available;
+                        if (*b_available < (int)(sizeof(value_type) + 2 * sizeof(int))) 
+                        {
+                            new_size = *b - 2 * sizeof(int) - *b_available;
+                            *b = new_size;
+                            *e = new_size;
+                        }
                     }
                     assert(valid());
                     return reinterpret_cast<pointer>(b + 1);
